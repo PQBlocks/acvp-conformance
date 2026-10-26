@@ -1,11 +1,11 @@
 # pqblocks-acvp
 
-Cross-implementation NIST ACVP and FIPS 203/204/205 post-quantum cryptography conformance harness.
+NIST ACVP conformance harness for FIPS 203 (ML-KEM) and FIPS 204 (ML-DSA), with a pure-Python reference oracle (kyber-py, dilithium-py) and partial adapters for pyca/cryptography (pure ML-DSA sigVer) and liboqs (ML-KEM decapsulation), plus a Go placeholder.
 Use it when evaluating and verifying post-quantum cryptography implementations against official NIST ACVP test corpora without denominator shrinkage.
-Standards implemented: NIST ACVP, FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA).
+Standards implemented: NIST ACVP, FIPS 203 (ML-KEM), FIPS 204 (ML-DSA). SLH-DSA (FIPS 205) is not yet covered.
 
 ```bash
-pip install pqblocks-acvp
+pip install git+https://github.com/PQBlocks/acvp-conformance
 ```
 
 ```python
@@ -27,22 +27,22 @@ print(f"Executed {rep.total_attempted} cases: {rep.passed} passed (denominator v
 Most conformance testing scripts suffer from favorable-case attrition: when a target library lacks support for an algorithm or key format (such as Go `crypto/mlkem` lacking ML-KEM-512, or liboqs using internal randomness), tests are silently omitted or dropped from the denominator, inflating the reported pass rate.
 
 `pqblocks-acvp` solves this with:
-1. **Strict 4-Way Error Taxonomy**: Every test case is categorized into exactly one of: `PASS`, `DOCUMENTED_VALIDATION_REJECTION`, `UNSUPPORTED_OPERATION`, `ADAPTER_INVOCATION_ERROR`, or `MISMATCH`.
+1. **5-way outcome taxonomy**: Every test case is categorized into exactly one of: `PASS`, `DOCUMENTED_VALIDATION_REJECTION`, `UNSUPPORTED_OPERATION`, `ADAPTER_INVOCATION_ERROR`, or `MISMATCH`.
 2. **Strict Denominator Preservation**: The total attempted cases must strictly equal the sum of all taxonomy buckets:
    $$\text{Attempted} = \text{Passed} + \text{DVR} + \text{Unsupported} + \text{Errors} + \text{Mismatches}$$
-3. **Cross-Implementation Adapters**: Bridges different library interfaces, including expanded decapsulation keys (2,400–3,168 bytes) vs seed keys (64 bytes), pure Python reference oracles, `pyca/cryptography`, and `liboqs`.
-4. **Independent Re-execution Framework**: Random sampling and differential verification across multiple adapter implementations to guarantee consistency.
+3. **Adapters**: one `BasePQCAdapter` interface. An adapter that cannot consume an ACVP case (pyca's seed-only ML-KEM keys, liboqs' internal randomness) reports it as `UNSUPPORTED_OPERATION`. No key-format conversion is implemented.
+4. **Re-execution helper** (`G7ReexecutionFramework`): samples cases and compares two adapters' outcome categories. It has only been run against the Go placeholder (agreement 0.0).
 
 ---
 
 ## Installation
 
 ```bash
-pip install pqblocks-acvp
+pip install git+https://github.com/PQBlocks/acvp-conformance
 ```
 
 Optional dependencies:
-- For `pyca/cryptography` adapter: `pip install "cryptography>=41.0.0"`
+- For `pyca/cryptography` adapter: `pip install "cryptography>=47.0.0"`
 - For `liboqs` adapter: system `liboqs.so` and `pip install liboqs-python`
 
 ---
@@ -61,7 +61,7 @@ python -m pqblocks_acvp.runner --golden --json
 # Run against an external NIST ACVP JSON test file
 python -m pqblocks_acvp.runner --corpus /path/to/internalProjection.json
 
-# Export SPDX 2.3 license compliance manifest
+# Print the fixed reference-component licence list (SPDX 2.3-shaped, not a full SPDX document)
 python -m pqblocks_acvp.runner --spdx
 ```
 
@@ -146,17 +146,19 @@ for adapter_name, report in reports.items():
   - `supports_algorithm(parameter_set: str, function: str) -> bool`
   - `run(test_case: TestCase) -> ExecutionResult`
 - `ReferencePQCAdapter`: In-process reference oracle adapter (built on `kyber-py` and `dilithium-py`).
-- `GoBridgeAdapter`: Adapter interface for Go `crypto/mlkem` (bridges 2,400-byte expanded keys to Go internal decapsulation key representations).
-- `PyCAAdapter`: Adapter for `pyca/cryptography` ML-KEM and ML-DSA implementations.
-- `LibOQSAdapter`: Adapter for `liboqs` C-library key encapsulation and digital signature verification.
+- `GoBridgeAdapter`: placeholder for Go `crypto/mlkem`. No Go program is called; every case is reported `UNSUPPORTED_OPERATION`.
+- `PyCAAdapter`: pyca/cryptography (≥ 47) ML-DSA external/pure signature verification; ML-KEM cases are reported unsupported.
+- `LibOQSAdapter`: liboqs ML-KEM decapsulation only; encapsulation (no caller `m`) and ML-DSA are reported unsupported.
 
 ---
 
 ## Limitations
 
+0. **Measured on the vendored corpus**: on `ML-KEM-encapDecap-FIPS203` (165 cases) the reference oracle gives 105 passed, 60 unsupported (key-check functions), 0 mismatches, 0 errors. The CLI text table has a Mismatch column; `--json` gives the full summary.
+
 1. **Not a Cryptographic Implementation**: `pqblocks-acvp` is a test harness and conformance validator; it is not designed to perform cryptographic encryption or signature operations in high-throughput production environments.
 2. **Third-Party Runtime Dependencies**: Testing external libraries (such as Go `crypto/mlkem` or C `liboqs`) requires those runtimes to be installed on the host system. When absent, the harness correctly records them as `UNSUPPORTED_OPERATION`.
-3. **Validation Status**: `pqblocks-acvp` is self-verified against official NIST ACVP test vectors and FIPS 203/204/205 specifications. It is not an accredited NVLAP laboratory report or CMVP validation certificate.
+3. **Validation Status**: `pqblocks-acvp` is self-verified against official NIST ACVP test vectors for FIPS 203 and FIPS 204 (SLH-DSA / FIPS 205 is not yet covered). It is not an accredited NVLAP laboratory report or CMVP validation certificate.
 
 ---
 

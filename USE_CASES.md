@@ -71,10 +71,12 @@ for name, rep in reports.items():
 ```
 Adapter              Attempted  Passed   Unsupported  Denominator OK 
 ----------------------------------------------------------------------
-Reference-FIPS-Oracle 120        120      0            True           
-Go-crypto/mlkem      120        0        120          True           
-pyca/cryptography    120        0        120          True           
+Reference-FIPS-Oracle 165        105      60           True           
+Go-crypto/mlkem      165        0        165          True           
+pyca/cryptography    165        0        165          True           
 ```
+
+The 60 unsupported Reference cases are the key-check functions (`encapsulationKeyCheck`, `decapsulationKeyCheck`), which the oracle does not run.
 
 ---
 
@@ -107,7 +109,7 @@ except ValueError as e:
 
 **Expected Output**:
 ```
-PASS: Corrupted key rejected per FIPS 203 7.3: Inconsistent decapsulation key: embedded H(ek) does not match ek
+PASS: Corrupted key rejected per FIPS 203 7.3: hash check failed
 ```
 
 ---

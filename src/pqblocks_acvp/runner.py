@@ -86,10 +86,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("=" * 70)
     print(f"Total Test Cases in Session: {session.total_test_cases}")
     print("-" * 70)
-    print(f"{'Adapter':20} {'Attempted':10} {'Passed':8} {'DVR':8} {'Unsup':8} {'Err':8}")
+    print(f"{'Adapter':20} {'Attempted':10} {'Passed':8} {'DVR':8} {'Mismatch':9} {'Unsup':8} {'Err':8}")
     print("-" * 70)
     for name, rep in reports.items():
-        print(f"{name:20} {rep.total_attempted:<10} {rep.passed:<8} {rep.documented_validation_rejections:<8} {rep.unsupported_operations:<8} {rep.adapter_errors:<8}")
+        print(f"{name:20} {rep.total_attempted:<10} {rep.passed:<8} {rep.documented_validation_rejections:<8} {rep.mismatches:<9} {rep.unsupported_operations:<8} {rep.adapter_errors:<8}")
     print("=" * 70)
     return 0
 

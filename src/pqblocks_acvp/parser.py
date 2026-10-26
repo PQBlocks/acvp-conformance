@@ -1,4 +1,4 @@
-"""ACVP JSON Parser for NIST FIPS 203, 204, and 205 test vectors."""
+"""ACVP JSON Parser for NIST FIPS 203 and 204 test vectors."""
 
 import hashlib
 import json
@@ -86,7 +86,12 @@ class ACVPParser:
             for tc in tg.get("tests", []):
                 tcId = tc.get("tcId", 0)
                 # Inputs vary by function
-                inputs = {k: v for k, v in tc.items() if k not in ("tcId", "resultsArray", "testPassed", "k", "c", "sig")}
+                # In decapsulation `c` (and the group `dk`) are inputs; in encapsulation `c` is an output.
+                is_decap = "decap" in function.lower()
+                moved = ("tcId", "resultsArray", "testPassed", "k", "sig") + (() if is_decap else ("c",))
+                inputs = {k: v for k, v in tc.items() if k not in moved}
+                if is_decap and "dk" in tg:
+                    inputs.setdefault("dk", tg["dk"])
                 # group-level variant flags decide which verification algorithm applies
                 for flag in ("signatureInterface", "preHash", "externalMu"):
                     if flag in tg:
@@ -94,7 +99,7 @@ class ACVPParser:
                 expected = {}
                 if "k" in tc:
                     expected["k"] = tc["k"]
-                if "c" in tc:
+                if "c" in tc and not is_decap:
                     expected["c"] = tc["c"]
                 if "sig" in tc:
                     expected["sig"] = tc["sig"]

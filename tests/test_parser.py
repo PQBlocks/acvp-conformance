@@ -54,3 +54,12 @@ def test_test_case_digest():
         expected={"k": "5678"},
     )
     assert tc2.digest == d1
+
+
+def test_decapsulation_cases_carry_c_and_group_dk():
+    from pqblocks_acvp.parser import ACVPParser
+    s = ACVPParser.parse_dict({"algorithm": "ML-KEM", "testGroups": [
+        {"tgId": 1, "parameterSet": "ML-KEM-768", "function": "decapsulation", "dk": "AA",
+         "tests": [{"tcId": 1, "c": "BB", "k": "CC"}]}]})
+    tc = s.groups[0].test_cases[0]
+    assert tc.inputs["c"] == "BB" and tc.inputs["dk"] == "AA" and tc.expected == {"k": "CC"}

@@ -7,9 +7,9 @@ This document records the performance, correctness, and conformance verification
 ## Benchmark Setup
 
 - **Hardware**: Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz (8 vCPUs), x86_64
-- **OS**: Linux (kernel 6.6)
+- **OS**: Linux
 - **Environment**: Python 3.11, 3.12, 3.13, 3.14 (fresh isolated virtual environments)
-- **Dependencies**: `kyber-py==1.2.0`, `dilithium-py==1.4.0`, `cryptography>=41.0.0`
+- **Dependencies**: `kyber-py==1.2.0`, `dilithium-py==1.4.0`, `cryptography>=47.0.0`
 - **Official Corpora**: NIST ACVP-Server `gen-val/json-files` (`ML-KEM-encapDecap-FIPS203`, `ML-DSA-sigVer-FIPS204`)
 - **Date**: 2026-10-25
 
@@ -18,6 +18,8 @@ This document records the performance, correctness, and conformance verification
 ## Conformance Results
 
 ### 1. Golden Session (Built-in Test Suite)
+
+The golden session's expected values are computed by the reference oracle itself, so the Reference row is a self-consistency check, not a conformance result.
 
 Evaluated over the standard 4-case golden validation session across all four adapter targets:
 
@@ -36,17 +38,15 @@ Evaluated against official NIST ACVP test vectors in `tests/vectors/`:
 
 | Standard | Test Vector Set | Cases Evaluated | Result | Classification |
 |---|---|---|---|---|
-| **FIPS 203** | `ML-KEM-encapDecap-FIPS203` (Encapsulation) | 60 | **60 passed, 0 failed** | `PASS` (bit-identical `c` and `k`) |
-| **FIPS 203** | `ML-KEM-encapDecap-FIPS203` (Decapsulation) | 60 | **60 passed, 0 failed** | `PASS` (bit-identical shared key `k`) |
-| **FIPS 204** | `ML-DSA-sigVer-FIPS204` (Pure External SigVer) | 30 | **30 passed, 0 failed** | `PASS` (verdict bit-identical with NIST) |
-| **FIPS 204** | Full `ML-DSA-sigVer-FIPS204` file execution | 1440 | **1440 cases accounted for** | 0 mismatches, 0 adapter errors, denominator verified |
+| **FIPS 203** | `ML-KEM-encapDecap-FIPS203` (Encapsulation) | 75 | **75 passed, 0 failed** | `PASS` (bit-identical `c` and `k`) |
+| **FIPS 203** | `ML-KEM-encapDecap-FIPS203` (Decapsulation) | 30 | **30 passed, 0 failed** | `PASS` (bit-identical shared key `k`) |
+| **FIPS 204** | `ML-DSA-sigVer-FIPS204` (Pure External SigVer) | 45 | **45 passed, 0 failed** | `PASS` (verdict bit-identical with NIST) |
+| **FIPS 204** | Full `ML-DSA-sigVer-FIPS204` file execution | 180 | 9 pass, 36 documented rejections, 135 unsupported internal/pre-hash cases | 0 mismatches, 0 adapter errors, denominator verified |
 
 ### 3. Execution Latency
 
-- **Test Suite Runtime**: 187 tests completed in **2.15 seconds** (Python 3.14) to **2.42 seconds** (Python 3.11).
-- **Per-Vector Evaluation Time**:
-  - ML-KEM-768 encapsulation + decapsulation: ~1.2 ms per case.
-  - ML-DSA-65 signature verification: ~2.8 ms per case.
+- **Test Suite Runtime**: see the per-Python results in TESTING.md.
+- Per-vector timings were not recorded in a shipped file.
 
 ---
 

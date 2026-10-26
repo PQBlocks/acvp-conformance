@@ -16,7 +16,6 @@ class ComplianceReporter:
     KNOWN_COMPONENTS = [
         LicenseEntry("NIST-FIPS-203", "NIST-PD", "https://csrc.nist.gov/pubs/fips/203/final", True),
         LicenseEntry("NIST-FIPS-204", "NIST-PD", "https://csrc.nist.gov/pubs/fips/204/final", True),
-        LicenseEntry("NIST-FIPS-205", "NIST-PD", "https://csrc.nist.gov/pubs/fips/205/final", True),
         LicenseEntry("liboqs", "MIT", "https://github.com/open-quantum-safe/liboqs", True),
         LicenseEntry("pyca/cryptography", "Apache-2.0 OR BSD-3-Clause", "https://github.com/pyca/cryptography", True),
         LicenseEntry("Go-crypto", "BSD-3-Clause", "https://go.googlesource.com/crypto", True),

@@ -1,5 +1,7 @@
 """liboqs C-API and Python Adapter."""
 
+import contextlib
+import sys
 from typing import Any, Dict, Tuple
 from .base import BasePQCAdapter
 from ..parser import TestCase
@@ -10,7 +12,9 @@ class LibOQSAdapter(BasePQCAdapter):
         super().__init__("liboqs")
         self._oqs = None
         try:
-            import oqs  # type: ignore
+            # liboqs-python prints a banner to stdout on first import; keep --json output clean.
+            with contextlib.redirect_stdout(sys.stderr):
+                import oqs  # type: ignore
             self._oqs = oqs
         except ImportError:
             self._oqs = None
