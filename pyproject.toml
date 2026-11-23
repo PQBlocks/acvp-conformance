@@ -10,7 +10,7 @@ readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.11"
-authors = [{name = "Govind Dubey", email = "govinddubeycse@gmail.com"}]
+authors = [{name = "Govind Dubey", email = "govinddubeycse+pqblocks@gmail.com"}]
 keywords = ["post-quantum", "pqc", "acvp", "fips-203", "fips-204", "ml-kem", "ml-dsa", "conformance-testing"]
 classifiers = [
     "Development Status :: 4 - Beta",
