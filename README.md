@@ -22,6 +22,53 @@ print(f"Executed {rep.total_attempted} cases: {rep.passed} passed (denominator v
 
 ---
 
+## Architecture & Data Flow
+
+```mermaid
+flowchart TD
+    subgraph Inputs["NIST ACVP Test Vectors"]
+        V1["FIPS 203: ML-KEM (512 / 768 / 1024)"]
+        V2["FIPS 204: ML-DSA (44 / 65 / 87)"]
+        V3["FIPS 205: SLH-DSA (SHA2 / SHAKE)"]
+    end
+
+    subgraph Core["pqblocks-acvp Engine"]
+        Parser["ACVP Parser & Vector Validator"]
+        Harness["Conformance Harness & KAT Runner"]
+        Taxonomy{"5-Way Outcome Classifier"}
+    end
+
+    subgraph Adapters["Cryptographic Adapters"]
+        A1["Reference Oracle (Pure Python)"]
+        A2["pyca/cryptography (Native)"]
+        A3["liboqs-python (C liboqs)"]
+        A4["Custom Implementations"]
+    end
+
+    subgraph Outcomes["Denominator-Preserved Results"]
+        O1["PASS"]
+        O2["DVR (Documented Validation Rejection)"]
+        O3["UNSUPPORTED_OPERATION"]
+        O4["ADAPTER_ERROR"]
+        O5["MISMATCH"]
+    end
+
+    subgraph Outputs["Reports & Manifests"]
+        R1["TAP v13 Stream"]
+        R2["Structured JSON Report"]
+        R3["SPDX SBOM & Compliance Manifest"]
+    end
+
+    V1 & V2 & V3 --> Parser
+    Parser --> Harness
+    Harness <--> A1 & A2 & A3 & A4
+    Harness --> Taxonomy
+    Taxonomy --> O1 & O2 & O3 & O4 & O5
+    O1 & O2 & O3 & O4 & O5 --> R1 & R2 & R3
+```
+
+---
+
 ## Why PQBlocks?
 
 Most conformance testing scripts suffer from favorable-case attrition: when a target library lacks support for an algorithm or key format (such as Go `crypto/mlkem` lacking ML-KEM-512, or liboqs using internal randomness), tests are silently omitted or dropped from the denominator, inflating the reported pass rate.
