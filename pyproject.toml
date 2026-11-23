@@ -4,16 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pqblocks-acvp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cross-implementation NIST ACVP conformance harness for FIPS 203 (ML-KEM) and FIPS 204 (ML-DSA)."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.11"
-authors = [{name = "The PQBlocks Authors"}]
+authors = [{name = "Govind Dubey", email = "govinddubeycse@gmail.com"}]
 keywords = ["post-quantum", "pqc", "acvp", "fips-203", "fips-204", "ml-kem", "ml-dsa", "conformance-testing"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -24,6 +24,9 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = ["dilithium_py", "kyber_py"]
+
+[project.scripts]
+pqblocks-acvp = "pqblocks_acvp.cli:main"
 
 [project.optional-dependencies]
 test = ["pytest", "cryptography>=47.0.0"]
